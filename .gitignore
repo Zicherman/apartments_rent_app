@@ -205,3 +205,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Database Sectio
+*.db
+*.sqlite3
+
+# React/Node Section
+node_modules/
+dist/
+build/

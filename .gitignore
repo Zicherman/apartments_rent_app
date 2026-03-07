@@ -214,3 +214,6 @@ __marimo__/
 node_modules/
 dist/
 build/
+
+fb_session/
+__pycache__/

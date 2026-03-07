@@ -1,7 +1,7 @@
 import sqlite3
 import time
 import re
-from fb_session.fb_scraper import scrape_facebook_groups
+from fb_scraper import scrape_facebook_groups
 from datetime import datetime, timedelta
 import pandas as pd
 import os

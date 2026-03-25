@@ -1,0 +1,51 @@
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  justify-items: center;
+}
+
+/* Individual Apartment Card */
+.card {
+  background-color: #c0b8b8;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  color: #2f2d2d; /* Dark text so you can see it! */
+  text-align: left;
+  transition: transform 0.2s;
+  border: 1px solid #c0b8b8;
+
+  width: 400px;           /* Keep width consistent */
+  max-width: 450px;
+  min-height: 200px;      /* But don't let it get too tiny */
+  display: flex;
+  flex-direction: column; /* Stack text vertically */
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between; /* This pushes one left and one right */
+  align-items: center;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #212426; /* Lighter color for secondary info */
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #335577;
+  height: auto;
+  text-align: right;
+}
+
+.card p {
+  margin: 10px 0;
+  font-size: 1rem;
+}

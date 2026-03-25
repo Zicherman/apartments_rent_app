@@ -99,7 +99,7 @@ def scrape_facebook_groups(group_urls):
                 """)
 
                 for post in new_posts:
-                    if " מחפש " in post['text'] or " מחפשת " in post['text']:
+                    if " מחפש " in post['text'] or " מחפשת " in post['text'] or " למכירה " in post['text']:
                         continue
                         
                     id_match = re.search(r'/posts/(\d+)|story_fbid=(\d+)|permalink/(\d+)', post['href'])

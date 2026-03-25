@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const app = express();
 
-const dbPath = path.join(__dirname, 'apartments.db');
+const dbPath = path.join(__dirname, '..', 'scraper', 'apartments.db');
 const db = sqlite(dbPath);
 
 console.log('DB path:', dbPath);

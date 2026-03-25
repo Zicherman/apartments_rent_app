@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import os
 
-DB_DIR = r"C:\Users\97252\Desktop\apartments_scraper_project\apartments_rent_app"
+DB_DIR = r"C:\Users\97252\Desktop\apartments_scraper_project\apartments_rent_app\scraper"
 DB_NAME = "apartments.db"
 
 groups = [

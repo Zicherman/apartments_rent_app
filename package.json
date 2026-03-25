@@ -1,0 +1,19 @@
+{
+  "name": "apartment-scraper-project",
+  "version": "1.0.0",
+  "description": "An automated real-time apartment hunter for Petah Tikva, Israel. This tool utilizes Python and Playwright to extract listings from multiple Facebook groups, stores the structured data in SQLite, and serves it through a custom React dashboard",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

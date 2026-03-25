@@ -6,21 +6,24 @@ from datetime import datetime, timedelta
 import pandas as pd
 import os
 
-DB_PATH = r"G:\My Drive\יונתן\python\apartment scraper project"
+DB_DIR = r"C:\Users\97252\Desktop\apartments_scraper_project\apartments_rent_app"
+DB_NAME = "apartments.db"
 
 groups = [
         "https://www.facebook.com/groups/682901001910318",
         "https://www.facebook.com/groups/716258928467864",
         "https://www.facebook.com/groups/216105212485630",
-        "https://www.facebook.com/groups/683985451631971"
+        "https://www.facebook.com/groups/683985451631971",
+        "https://www.facebook.com/groups/248835652321875",
+        "https://www.facebook.com/groups/389882678416255"
     ]
 
 
 def extract_price(text):
     text = text.replace(",", "").replace(".", "")
-    if not re.search('(?<!\d)\d{4}(?!\d)', text):
+    if not re.search('(?<!\d)([1-9],?\d{3})(?!\d)', text):
         return "ללא מחיר במודעה"
-    price = int(re.search('(?<!\d)\d{4}(?!\d)', text).group().strip())
+    price = int(re.search('(?<!\d)([1-9],?\d{3})(?!\d)', text).group().replace(",", "").strip())
     
     if price > 2500 and price< 12000:
         return str(price)
@@ -92,7 +95,10 @@ def extract_group_name(url):
     group_dict = {"https://www.facebook.com/groups/682901001910318":"דירות להשכרה בפתח תקווה",
             "https://www.facebook.com/groups/716258928467864":"דירות בשושו פתח תקווה והסביבה -אין כניסה ⛔ למתווכים!!",
             "https://www.facebook.com/groups/216105212485630":"דירות להשכרה בפתח תקווה ללא תיווך",
-            "https://www.facebook.com/groups/683985451631971":"דירות להשכרה בפתח תקווה"}
+            "https://www.facebook.com/groups/683985451631971":"דירות להשכרה בפתח תקווה",
+            "https://www.facebook.com/groups/248835652321875": "דירות להשכרה בפתח תקווה והסביבה",
+            "https://www.facebook.com/groups/389882678416255":"דירות למכירה ולהשכרה בפתח תקווה והסביבה"
+            }
     
     return group_dict[url]
 
@@ -109,8 +115,35 @@ def extract_size(text):
     
     return None    
 
+def cleaning_text(text):
+    if not text:
+        return ""
+    
+    text = str(text)
+    start_pattern = r'.*?·\s*'
+    text = re.sub(start_pattern, '', text, count=1, flags=re.DOTALL)
+
+    end_markers = [
+        "כל הרגשות", 
+        "לייק\nתגובה", 
+        "לייק תגובה", 
+        "שיתוף", 
+        "כתיבת תגובה"
+    ]
+    
+    for marker in end_markers:
+        index = text.find(marker)
+        if index != -1:
+            text = text[:index]
+            break # Stop at the first marker we find
+
+    text = re.sub(r'\+\d+\s*$', '', text.strip())
+    return text.strip()
+
+
 def get_and_process_df():
     df = scrape_facebook_groups(groups)
+    df["text"] = df["text"].apply(lambda x: cleaning_text(x))
     df["price"] = df["text"].apply(lambda x: extract_price(x))
     df["rooms"] = df["text"].apply(lambda x: extract_rooms(x))
     df["date"] = df["date_time"].apply(lambda x: extract_time(x))
@@ -123,7 +156,7 @@ def main():
         df = get_and_process_df()
         if not df.empty:
             # Construct full path to avoid Drive sync issues
-            db_file = os.path.join(DB_PATH, "apaetments.db")
+            db_file = os.path.join(DB_DIR, DB_NAME)
             
             try:
                 # 'with' ensures the connection closes even if an error occurs
@@ -133,6 +166,12 @@ def main():
                     new_rows = 0
                     
                     for index, row in df.iterrows():
+                        
+                        if "למכירה" in row["text"] or "מחפש" in row["text"]:
+                            continue
+                        if len(row["text"]) < 70:
+                            continue
+                        
                         try:
                             cursor.execute("""
                                     INSERT OR IGNORE INTO apartments (
@@ -161,8 +200,7 @@ def main():
             except sqlite3.OperationalError as e:
                 print(f"Database access error (likely locked): {e}")
                 
-            
-        connection.close()
+       
         print("finish a loop in: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         time.sleep(1800)
 

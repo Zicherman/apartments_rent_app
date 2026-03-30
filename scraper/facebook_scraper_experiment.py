@@ -5,9 +5,12 @@ from fb_scraper import scrape_facebook_groups
 from datetime import datetime, timedelta
 import pandas as pd
 import os
+import requests
 
 DB_DIR = r"C:\Users\97252\Desktop\apartments_scraper_project\apartments_rent_app\scraper"
 DB_NAME = "apartments.db"
+
+IMG_STORAGE_DIR = r"C:\Users\97252\Desktop\apartments_scraper_project\apartments_rent_app\client\public\apartment_images"
 
 groups = [
         "https://www.facebook.com/groups/682901001910318",
@@ -21,11 +24,11 @@ groups = [
 
 def extract_price(text):
     text = text.replace(",", "").replace(".", "")
-    if not re.search('(?<!\d)([1-9],?\d{3})(?!\d)', text):
+    if not re.search('(?<!\d)([1-9]\d?,?\d{3})(?!\d)', text):
         return "ללא מחיר במודעה"
-    price = int(re.search('(?<!\d)([1-9],?\d{3})(?!\d)', text).group().replace(",", "").strip())
+    price = int(re.search('(?<!\d)([1-9]\d?,?\d{3})(?!\d)', text).group().replace(",", "").strip())
     
-    if price > 2500 and price< 12000:
+    if price > 1500 and price< 25000:
         return str(price)
     else:
         return "ללא מחיר במודעה"
@@ -149,8 +152,51 @@ def get_and_process_df():
     df["date"] = df["date_time"].apply(lambda x: extract_time(x))
     df["size"] = df["text"].apply(lambda x: extract_size(x))
     df["group_name"] = df["group_url"].apply(lambda x: extract_group_name(x))
-    return df
     
+    df["valid"] = (df["price"] != "ללא מחיר במודעה") | \
+                  (df["rooms"].notnull()) | \
+                  (df["size"].notnull())
+    
+    df = df[df["valid"] == True].drop(columns=["valid"])
+    
+    return df
+        
+def download_apartment_images(urls_string, post_id):
+    # Check if there's anything to download
+    if not urls_string or pd.isna(urls_string) or urls_string == "":
+        return ""
+    
+    img_dir = r"C:\Users\97252\Desktop\apartments_scraper_project\apartments_rent_app\client\public\apartment_images"
+    
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
+        
+    # Split the long string into individual URLs
+    urls = [u.strip() for u in urls_string.split("|") if "scontent" in u]
+    local_paths = []
+    
+    for i, url in enumerate(urls):
+        try:
+            # Add a small delay to avoid Facebook blocking you for rapid requests
+            time.sleep(0.5) 
+            response = requests.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                filename = f"{post_id}_{i}.jpg"
+                file_path = os.path.join(img_dir, filename)
+                
+                with open(file_path, 'wb') as f:
+                    f.write(response.content)
+                
+                # We store the relative path for React
+                local_paths.append(f"/apartment_images/{filename}")
+                # print(f"Successfully downloaded: {filename}")
+        except Exception as e:
+            print(f"Failed image {i} for post {post_id}: {e}")
+            
+    # Join the LOCAL paths back into a string for the DB
+    return " | ".join(local_paths)
+
 def main():
     while True:
         df = get_and_process_df()
@@ -167,11 +213,21 @@ def main():
                     
                     for index, row in df.iterrows():
                         
+                        #check if this text already exists in our DB from another group
+                        cursor.execute("SELECT 1 FROM apartments WHERE text = ?", (row['text'],))
+                        if cursor.fetchone():
+                            continue # Skip if we already have this exact text
+                        
+                        #check if the word "למכירה" or "מחפש" in the text - not a rental apartment
                         if "למכירה" in row["text"] or "מחפש" in row["text"]:
                             continue
+                        
+                        #check if the text isnt too short
                         if len(row["text"]) < 70:
                             continue
                         
+                        local_img_string = download_apartment_images(row['pictures'], row['post_id'])
+
                         try:
                             cursor.execute("""
                                     INSERT OR IGNORE INTO apartments (
@@ -186,7 +242,7 @@ def main():
                                     row['rooms'], 
                                     row['date'],
                                     row['group_name'],
-                                    row['pictures'],
+                                    local_img_string,
                                     row['size']
                                 ))
                             if cursor.rowcount > 0:

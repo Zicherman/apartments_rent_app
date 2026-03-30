@@ -218,3 +218,7 @@ build/
 fb_session/
 __pycache__/
 
+# Apartment Project Assets
+scraper/apartments_pictures/
+client/public/apartment_images/
+

@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Frank+Ruhl+Libre:wght@700&display=swap');
- 
+
 /* ─── Tokens ──────────────────────────────────────────────────────────────── */
 :root {
   --gold:        #F5C54D;
@@ -7,30 +7,33 @@
   --gold-pale:   #F8F3B6;
   --gold-deep:   #C8990A;
   --gold-text:   #7A5C00;
- 
+
   --white:       #FFFFFF;
   --bg:          #FDFBF3;
   --card-bg:     #FFFFFF;
- 
+
   --text-dark:   #1C1A10;
   --text-mid:    #4A4230;
   --text-light:  #9A8E6A;
- 
+
   --border:      rgba(200, 153, 10, 0.2);
   --shadow-sm:   0 1px 4px rgba(150, 110, 0, 0.1);
   --shadow-md:   0 6px 24px rgba(150, 110, 0, 0.18);
- 
+
   --radius-sm:   8px;
   --radius-md:   14px;
   --radius-lg:   20px;
- 
+
   --font-display: 'Frank Ruhl Libre', Georgia, serif;
   --font-body:    'Heebo', 'Segoe UI', sans-serif;
+
+  --sidebar-closed: 52px;   /* width of the sidebar when it shows only the icon */
+  --sidebar-open:   260px;  /* width of the sidebar when the filter panel is expanded */
 }
- 
+
 /* ─── Reset ───────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
 body {
   background: var(--bg);
   font-family: var(--font-body);
@@ -38,89 +41,392 @@ body {
   direction: rtl;
   -webkit-font-smoothing: antialiased;
 }
- 
+
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
+/* Lock the whole app to the viewport so ONLY app-body scrolls.
+   This means the header is always stuck to the top of app-body (its own
+   scroll container) and the sidebar never shifts — no more push/pull. */
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  direction: ltr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* main area: restores RTL, becomes the scroll container */
+.app-body {
+  flex: 1;
+  direction: rtl;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
 /* ─── Header ──────────────────────────────────────────────────────────────── */
+/* sticky within app-body (the scroll container), so it locks to the top
+   of the visible area. Because app-body is the scroller, sticky:top:0
+   works perfectly with no push/pull effect. */
 .app-header {
   background: linear-gradient(160deg, var(--gold) 0%, var(--gold-mid) 60%, var(--gold-pale) 100%);
-  border-bottom: 1.5px solid rgba(200, 153, 10, 0.35);
-  padding: 28px 28px 0;
+  border-bottom: none;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  direction: rtl;
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(6px);
 }
- 
-.header-inner {
+
+/* the logo image from /public/icon.svg */
+.app-logo {
+  height: 36px;
+  width: auto;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+
+/* container for title and subtitle on one line */
+.app-titles {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 16px;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
 }
- 
+
+/* main title */
 .app-title {
-  font-family: var(--font-display);
-  font-size: 2rem;
+  font-family: var(--font-body);
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-dark);
   line-height: 1;
-  letter-spacing: -0.5px;
 }
- 
+
+/* the small dot separator between title and subtitle */
+.app-divider {
+  color: var(--gold-text);
+  opacity: 0.5;
+  font-size: 1rem;
+}
+
 .app-subtitle {
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   color: var(--gold-text);
-  margin-top: 4px;
   opacity: 0.9;
+  font-weight: 500;
 }
- 
-.header-count {
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(200,153,10,0.3);
+
+/* ─── Results bar ─────────────────────────────────────────────────────────── */
+.results-bar {
+  padding: 18px 24px 4px;
+  direction: rtl;
+}
+
+.results-count {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(200, 153, 10, 0.3);
   color: var(--gold-text);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 5px 12px;
+  padding: 4px 12px;
   border-radius: 20px;
-  white-space: nowrap;
+  display: inline-block;
 }
- 
-/* ─── Filter bar ──────────────────────────────────────────────────────────── */
-.filter-bar {
-  display: flex;
-  gap: 20px;
-  padding: 10px 0 14px;
-  overflow-x: auto;
+
+/* sort dropdown - kept for reference but no longer used in the results bar */
+
+/* ─── Sort section inside filter panel ───────────────────────────────────── */
+.filter-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
 }
- 
-.filter-item {
+
+.filter-sort-section {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 0.72rem;
-  color: var(--gold-text);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+  gap: 4px;
 }
- 
-.filter-item select {
-  background: rgba(255,255,255,0.7);
-  border: 1px solid rgba(200,153,10,0.35);
-  border-radius: var(--radius-sm);
-  padding: 5px 10px;
+
+/* styled dropdown inside the filter panel */
+.filter-sort-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #ccc;
+  color: #333;
   font-family: var(--font-body);
-  font-size: 0.85rem;
-  color: var(--text-dark);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   outline: none;
+  direction: rtl;
+  transition: border-color 0.15s, background 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
 }
- 
-.filter-item select:focus {
-  border-color: var(--gold-deep);
-  background: white;
+
+.filter-sort-select:hover,
+.filter-sort-select:focus {
+  border-color: #aaa;
+  background-color: rgba(255, 255, 255, 0.95);
 }
- 
+
+/* ─── Filter sidebar ──────────────────────────────────────────────────────── */
+.filter-sidebar {
+  width: var(--sidebar-closed);
+  background: #f0f0f0;
+  border-left: 1px solid #d0d0d0;
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  height: 100%;
+  z-index: 200;
+  overflow-y: auto;
+  box-shadow: -2px 0 12px rgba(0,0,0,0.06);
+}
+
+/* expanded state */
+.filter-sidebar.open {
+  width: var(--sidebar-open);
+  align-items: stretch;
+}
+
+/* ─── Filter panel ────────────────────────────────────────────────────────── */
+.filter-panel {
+  flex: 1;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  direction: rtl;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease 0s;
+  overflow-y: auto;
+}
+
+/* fade in the panel after the sidebar finishes expanding */
+.filter-sidebar.open .filter-panel {
+  opacity: 1;
+  pointer-events: all;
+  transition: opacity 0.2s ease 0.15s;
+}
+
+/* section divider between filter and sort */
+.filter-divider {
+  border: none;
+  border-top: 1px solid #d8d8d8;
+  margin: 0;
+}
+
+.filter-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 0;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--gold-deep);
+  display: inline-block;
+}
+
+/* apply filter button */
+.filter-apply-btn {
+  background: var(--gold-deep);
+  border: none;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  align-self: stretch;
+  letter-spacing: 0.3px;
+}
+
+.filter-apply-btn:hover { background: #a37a00; }
+.filter-apply-btn:active { transform: scale(0.98); }
+
+/* reset button */
+.filter-reset-btn {
+  background: transparent;
+  border: 1px solid #bbb;
+  color: #777;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  align-self: stretch;
+  text-align: center;
+}
+
+.filter-reset-btn:hover { background: #e0e0e0; color: #444; border-color: #999; }
+
+/* ─── Filter toggle button ────────────────────────────────────────────────── */
+.filter-toggle-btn {
+  margin-top: auto;
+  margin-bottom: 16px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #555;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, box-shadow 0.2s;
+  align-self: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.filter-toggle-btn:hover {
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* ─── Dual Range Slider ───────────────────────────────────────────────────── */
+/* custom two-handle range slider.
+   two <input type="range"> elements are stacked on the same track.
+   the inputs themselves are transparent; only the thumbs are styled.
+   direction:ltr on the track wrapper is the key fix:
+   - without it, RTL makes the min thumb appear on the RIGHT (wrong UX)
+   - with it, min thumb is on the LEFT and max is on the RIGHT (correct UX)
+   - it also fixes the golden fill bar, because the left/right percentages
+     now correctly correspond to the actual visual thumb positions. */
+.dual-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* row: label on the right, current values on the left (RTL layout) */
+.dual-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dual-slider-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #444;
+}
+
+/* live value readout, e.g. "2,000₪ — 8,000₪" */
+.dual-slider-values {
+  font-size: 0.72rem;
+  color: #666;
+  font-weight: 700;
+}
+
+/* the track area — direction:ltr forces the range inputs to go left(min)→right(max)
+   regardless of the RTL page direction. this fixes BOTH the thumb direction bug
+   AND the fill bar overflow bug in one change. */
+.dual-slider-track-wrap {
+  position: relative;
+  height: 20px;
+  direction: ltr; /* ← KEY FIX: makes left = min, right = max on the slider */
+}
+
+/* the gray unselected portion of the track */
+.dual-slider-bg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 4px;
+  background: #d0d0d0;
+  border: none;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* the golden selected portion of the track, between the two handles.
+   left and right are set as inline styles from the JS percentage calculations.
+   with direction:ltr on the parent, left=minPct% and right=(100-maxPct)% correctly
+   describes the filled region between the two thumbs. */
+.dual-slider-fill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  background: var(--gold-deep);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* both range inputs sit on top of each other, covering the full track.
+   pointer-events:none makes the track area click-through so both are draggable. */
+.dual-slider-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+}
+
+/* thumb (the draggable circle) - pointer-events:all re-enables dragging */
+.dual-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--gold-deep);
+  cursor: pointer;
+  pointer-events: all;
+  transition: background 0.15s;
+}
+
+.dual-slider-input::-webkit-slider-thumb:hover {
+  background: var(--gold-deep);
+}
+
+/* firefox thumb */
+.dual-slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--gold-deep);
+  cursor: pointer;
+  pointer-events: all;
+}
+
 /* ─── State messages ──────────────────────────────────────────────────────── */
 .state-msg {
   text-align: center;
@@ -129,17 +435,17 @@ body {
   font-size: 1rem;
 }
 .state-msg.error { color: #c0392b; }
- 
+
 /* ─── Card grid ───────────────────────────────────────────────────────────── */
 .card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 22px;
-  padding: 24px 24px 40px;
+  padding: 16px 24px 40px;
   max-width: 1440px;
   margin: 0 auto;
 }
- 
+
 /* ─── Card ────────────────────────────────────────────────────────────────── */
 .card {
   background: var(--card-bg);
@@ -153,60 +459,58 @@ body {
      position:fixed children (the modal). We animate via box-shadow only. */
   transition: box-shadow 0.25s ease;
 }
- 
+
 .card:hover {
   box-shadow: var(--shadow-md);
 }
- 
+
 /* ─── Image grid ──────────────────────────────────────────────────────────── */
-/*
-  Using aspect-ratio instead of a fixed height so images NEVER get cut.
-  The grid fills the box; images use object-fit:cover inside each cell.
-*/
+/* fixed height (not aspect-ratio) so every image grid is exactly the same size
+   regardless of how many photos the post has. */
 .image-grid {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 220px;  /* fixed height ensures all cards have identical image areas */
   display: grid;
   gap: 2px;
-  background: var(--gold-pale);    /* gap color */
-  flex-shrink: 0;                  /* prevents grid from collapsing in flex */
+  background: var(--gold-pale);  /* gap color between images */
+  flex-shrink: 0;                /* prevents the grid from collapsing inside the flex card */
 }
- 
-/* 1 image — full width */
+
+/* 1 image — fills the full area */
 .grid-1 {
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
 }
- 
+
 /* 2 images — side by side */
 .grid-2 {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
 }
- 
+
 /* 3 images — 1 big left, 2 stacked right */
 .grid-3 {
   grid-template-columns: 2fr 1fr;
   grid-template-rows: 1fr 1fr;
 }
 .grid-3 .grid-item:first-child { grid-row: span 2; }
- 
+
 /* 4 images — 1 big left, 3 stacked right */
 .grid-4 {
   grid-template-columns: 2fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
 }
 .grid-4 .grid-item:first-child { grid-row: span 3; }
- 
+
 .grid-item {
   position: relative;
   overflow: hidden;
   cursor: pointer;
   background: #e8ddb5;
-  min-height: 0;     /* critical — lets grid cells shrink properly */
+  min-height: 0;  /* critical — lets grid cells shrink properly inside a fixed-height container */
   min-width: 0;
 }
- 
+
 .grid-item img {
   width: 100%;
   height: 100%;
@@ -214,9 +518,10 @@ body {
   display: block;
   transition: transform 0.35s ease;
 }
- 
+
 .grid-item:hover img { transform: scale(1.05); }
- 
+
+/* the dark "+N" overlay on the last visible image when more photos exist */
 .overlay {
   position: absolute;
   inset: 0;
@@ -228,9 +533,10 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
 }
- 
+
+/* placeholder shown when the apartment has no images */
 .no-photos {
-  aspect-ratio: 16 / 9;
+  height: 220px; /* same fixed height as .image-grid so cards stay uniform */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,7 +545,7 @@ body {
   font-size: 0.85rem;
   flex-shrink: 0;
 }
- 
+
 /* ─── Card body ───────────────────────────────────────────────────────────── */
 .card-body {
   padding: 14px 16px 16px;
@@ -248,13 +554,13 @@ body {
   gap: 10px;
   flex: 1;
 }
- 
+
 .card-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
- 
+
 /* Badges */
 .badge {
   display: inline-block;
@@ -264,36 +570,65 @@ body {
   font-weight: 700;
   letter-spacing: 0.2px;
 }
- 
+
 .badge-price {
   background: var(--gold);
   color: var(--text-dark);
 }
- 
+
 .badge-rooms {
   background: var(--gold-pale);
   color: var(--gold-text);
   border: 1px solid var(--gold-mid);
 }
- 
+
 .badge-size {
   background: #f5f2e8;
   color: var(--text-mid);
   border: 1px solid #e0d8b0;
 }
- 
-/* Text */
+
+/* post text - clamped to 4 lines to keep cards a consistent height */
 .card-text {
   font-size: 0.85rem;
   line-height: 1.7;
   color: var(--text-mid);
   display: -webkit-box;
-  --webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4; /* Added standard property */
   overflow: hidden;
   text-align: right;
+  max-height: calc(1.7em * 4);
 }
- 
+
+.card-text.expanded {
+  display: block;
+  overflow: visible;
+  max-height: none;
+  -webkit-line-clamp: none; /* Changed from unset to none */
+  line-clamp: none; /* Added standard property */
+}
+
+
+/* "עוד" button to expand card text */
+.card-expand-btn {
+  background: none;
+  border: none;
+  color: var(--gold-deep);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 2px;
+  display: block;
+  text-align: right;
+  width: 100%;
+}
+
+.card-expand-btn:hover { text-decoration: underline; }
+
 /* Footer */
 .card-footer {
   display: flex;
@@ -303,14 +638,15 @@ body {
   border-top: 1px solid var(--gold-pale);
   gap: 8px;
 }
- 
+
 .card-date {
   font-size: 0.72rem;
   color: var(--text-light);
   white-space: nowrap;
   flex-shrink: 0;
 }
- 
+
+/* group name - truncated with ellipsis if too long, full name shown on hover via title attr */
 .card-source {
   font-size: 0.72rem;
   color: var(--text-light);
@@ -320,15 +656,13 @@ body {
   text-align: left;
   max-width: 60%;
 }
- 
+
 /* ─── Modal ───────────────────────────────────────────────────────────────── */
-/*
-  Rendered via createPortal into document.body, so it's NEVER inside
-  the card. This fully solves:
-   1. Centering (no parent transform skewing fixed positioning)
-   2. Flickering (no re-layout from card hover transform)
-   3. Dark background issue (overlay now covers 100vw × 100vh cleanly)
-*/
+/* Rendered via createPortal into document.body, so it's NEVER inside
+   the card. This fully solves:
+    1. Centering (no parent transform skewing fixed positioning)
+    2. Flickering (no re-layout from card hover)
+    3. Dark background (overlay now covers 100vw × 100vh cleanly) */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -341,12 +675,12 @@ body {
   z-index: 9999;
   animation: fadeIn 0.18s ease;
 }
- 
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
- 
+
 .modal-content {
   position: relative;
   display: flex;
@@ -355,26 +689,27 @@ body {
   max-width: 92vw;
   max-height: 90vh;
 }
- 
+
 .modal-content img {
   max-width: 92vw;
   max-height: 88vh;
   object-fit: contain;
   border-radius: var(--radius-sm);
   display: block;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
- 
+
+/* image counter shown below the current image, e.g. "3 / 7" */
 .modal-counter {
   position: absolute;
   bottom: -28px;
   left: 50%;
   transform: translateX(-50%);
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
   white-space: nowrap;
 }
- 
+
 /* Close button */
 .modal-close {
   position: fixed;
@@ -383,8 +718,8 @@ body {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: white;
   font-size: 0.9rem;
   cursor: pointer;
@@ -394,16 +729,16 @@ body {
   transition: background 0.2s;
   z-index: 10000;
 }
- 
-.modal-close:hover { background: rgba(255,255,255,0.22); }
- 
-/* Nav arrows */
+
+.modal-close:hover { background: rgba(255, 255, 255, 0.22); }
+
+/* Prev/Next navigation arrows */
 .modal-nav {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
   width: 44px;
   height: 44px;
@@ -417,7 +752,7 @@ body {
   transition: background 0.2s;
   z-index: 10000;
 }
- 
-.modal-nav:hover { background: rgba(255,255,255,0.2); }
+
+.modal-nav:hover { background: rgba(255, 255, 255, 0.2); }
 .modal-prev { right: 18px; }
 .modal-next { left: 18px; }

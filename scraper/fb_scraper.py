@@ -5,13 +5,35 @@ import time
 import random
 import re
 
+def human_scroll(page):
+    """
+    Scrolls down the page in small, variable increments to mimic a human user.
+    """
+    # Randomize the total distance to scroll in this 'session'
+    total_scroll_distance = random.randint(2500, 3500)
+    scrolled_so_far = 0
+    
+    while scrolled_so_far < total_scroll_distance:
+        # Randomize the size of each individual 'flick' of the scroll wheel
+        step = random.randint(300, 600)
+        page.mouse.wheel(0, step)
+        scrolled_so_far += step
+        
+        # Random short pause between scrolls to mimic reading/processing
+        time.sleep(random.uniform(0.4, 0.9))
+        
+    # Occasionally "overshoot" or scroll back up slightly like a human adjusting
+    if random.random() > 0.7:
+        page.mouse.wheel(0, -random.randint(100, 200))
+        time.sleep(random.uniform(0.5, 1.0))
+
 def scrape_facebook_groups(group_urls):
     all_posts = []
     
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir="./fb_session",
-            headless=False,
+            headless=True,
             args=[
                 "--disable-blink-features=AutomationControlled",
                 "--start-maximized" 
@@ -123,8 +145,7 @@ def scrape_facebook_groups(group_urls):
                         })
                         seen_ids.add(post_id)
 
-                page.mouse.wheel(0, 3000)
-                page.wait_for_timeout(2000) 
+                human_scroll(page) 
         
         context.close()
     return pd.DataFrame(all_posts).drop_duplicates(subset=['text'], keep='first')

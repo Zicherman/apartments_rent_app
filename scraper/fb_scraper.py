@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+from playwright_stealth import stealth_sync
 import pandas as pd
 import time
 import random
@@ -10,10 +11,16 @@ def scrape_facebook_groups(group_urls):
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir="./fb_session",
-            headless=True,
-            args=["--disable-blink-features=AutomationControlled"]
-        )
+            headless=False,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--start-maximized" 
+            ],
+            # Force a large viewport so you can see all buttons
+            # viewport={"width": 1920, "height": 1080} # <--- Add this, remove no_viewport=True
+        )   
         page = context.new_page()
+        # stealth_sync(page)
 
         for group_url in group_urls:
             print(f"Navigating to: {group_url}")

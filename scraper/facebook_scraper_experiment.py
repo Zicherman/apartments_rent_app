@@ -21,6 +21,10 @@ groups = [
         "https://www.facebook.com/groups/389882678416255"
     ]
 
+Apartment_Max_Price = 25000
+Apartment_Min_Price = 2100 
+
+Scraper_Cooldown_In_Seconds = 1200
 
 def extract_price(text):
     text = text.replace(",", "").replace(".", "")
@@ -28,7 +32,7 @@ def extract_price(text):
         return "ללא מחיר במודעה"
     price = int(re.search('(?<!\d)([1-9]\d?,?\d{3})(?!\d)', text).group().replace(",", "").strip())
     
-    if price > 1500 and price< 25000:
+    if price > Apartment_Min_Price and price< Apartment_Max_Price:
         return str(price)
     else:
         return "ללא מחיר במודעה"
@@ -258,7 +262,7 @@ def main():
                 
        
         print("finish a loop in: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        time.sleep(1800)
+        time.sleep(Scraper_Cooldown_In_Seconds)
 
 if __name__ == "__main__":
     main()

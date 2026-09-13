@@ -38,7 +38,6 @@ The scraper and API are separate processes. The scraper writes data to SQLite, w
 
 - **Python**: scraping and data-processing runtime.
 - **Playwright**: controls Chromium and reads Facebook group feeds.
-- **playwright-stealth**: included for browser automation experiments.
 - **pandas**: collects and de-duplicates scraped posts in a DataFrame.
 - **SQLite**: local file-based database.
 
@@ -53,7 +52,6 @@ The scraper and API are separate processes. The scraper writes data to SQLite, w
 
 - **React 19**: dashboard UI and component state.
 - **Vite**: development server and production build tool.
-- **ESLint**: JavaScript and React linting.
 - **CSS**: responsive layout and RTL presentation.
 
 ## Project Structure
